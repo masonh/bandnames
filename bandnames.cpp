@@ -330,6 +330,7 @@ class wordlist
 			}
 		}
 		string templine;
+		list.clear();
 		while (!datfile.eof())
 		{
 			getline(datfile,templine);
@@ -378,12 +379,12 @@ class wordlist
 		int pos;
 		if (list==1)
 		{
-			pos = rand() % list1.size();
+			pos = rand() % (list1.size()-1);
 			return list1[pos];
 		}
 		if (list==2)
 		{
-			pos = rand() % list2.size();
+			pos = rand() % (list2.size()-1);
 			return list2[pos];
 		}
 		cerr << "Error: list " << list << " does not exist!";
@@ -396,7 +397,8 @@ class wordlist
 int main (int argc, char *argv[])
 {
 	bool dump=false;	// dump internal lists to data files
-	bool bstat=false;	// enable data files by default
+	static bool dstat=false;	// remember default
+	bool bstat=dstat;	// enable data files by default
 	bool nstat=false;	// disable internal lists? default (false) enable them
 	bool verbose=false;	// don't output non-fatal errors
 
@@ -421,14 +423,17 @@ int main (int argc, char *argv[])
 			cout 
 			<< "Rock Band name generator\n"
 			<< "Usage: bn [OPTION]\n"
-			<< "Output a random band name.\n\n"
-			#ifdef default_static
+			<< "Output a random band name.\n\n";
+			if(dstat){
+			cout
 			<< "  -s, --static     force built-in lists (default)\n"
-			<< "  -n, --nstatic    default to data files\n"
-			#else
+			<< "  -n, --nstatic    default to data files\n";
+			}else{
+			cout
 			<< "  -s, --static     force built-in lists\n"
-			<< "  -n, --nstatic    default to data files (default)\n"
-			#endif
+			<< "  -n, --nstatic    default to data files (default)\n";
+			}
+			cout 
 			<< "  -m, --nostatic   disable built-in lists\n"
 			#ifdef WIN32
 			<< "  -p               pause after display (default)\n"
@@ -477,7 +482,7 @@ int main (int argc, char *argv[])
 	}
 
 	if(!bstat)
-		if(word.load()>1){
+		if(word.load(verbose,nstat)>1){
 			cerr << "Fatal Error. Exiting..." << endl;
 			return 1;
 		}
