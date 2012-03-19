@@ -370,7 +370,7 @@ class wordlist
 	
 	string random()
 	{
-		return random(1) + random(2);
+		return random(1) + " " + random(2);
 	}
 	string random(int list)
 	{
@@ -378,12 +378,12 @@ class wordlist
 		int pos;
 		if (list==1)
 		{
-			pos = random() % list1.size();
+			pos = rand() % list1.size();
 			return list1[pos];
 		}
 		if (list==2)
 		{
-			pos = random() % list2.size();
+			pos = rand() % list2.size();
 			return list2[pos];
 		}
 		cerr << "Error: list " << list << " does not exist!";
