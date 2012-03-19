@@ -34,7 +34,6 @@
 using namespace std;
 
 bool dump=false;	// dump internal lists to data files
-bool bstat=true;	// disable data files by default
 bool bstat=false;	// enable data files by default
 bool nstat=false;	// disable internal lists? default (false) enable them
 
