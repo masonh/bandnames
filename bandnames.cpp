@@ -440,7 +440,7 @@ int main (int argc, char *argv[])
 			pauseAtEnd = false;
 		else{
 			cout << "Unrecognised argument: '" << argv[1] << "'\n";
-			cout << "Try 'bofh -h' for a list of valid arguments" << endl;
+			cout << "Try '"<<argv[0]<<" -h' for a list of valid arguments" << endl;
 			return 0;
 		}
 	}
