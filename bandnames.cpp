@@ -6,30 +6,36 @@
  * enjoy!
  */
 
- /*
-  * BUGS:
-  *
-  * It can only return one unique band name per second because rand() is
-  * seeded with time(), which returns seconds. I don't think this will be an
-  * issue for most people, though.
-  *
-  * Requires C++0x / C++11 compiler.
-  */
+/*
+ * BUGS:
+ *
+ * It can only return one unique band name per second because rand() is
+ * seeded with time(), which returns seconds. I don't think this will be an
+ * issue for most people, though.
+ *
+ * Requires C++0x / C++11 compiler.
+ *
+ * Do not use data files with /r/n for line breaks. only use /n
+ */
 
 
 
 
 //#define default_static		// disables data files by default
 
-//#include <time.h>
-//#include <ctype.h>
-#include <stdlib.h>
+
+#include <cstdio>
+#ifdef WIN32
+#include <conio.h>
+#endif
+#include <cstdlib>
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <initializer_list>
 #include <string>
-#include <string.h>
+#include <cstring>
+#include <ctime>
 using namespace std;
 
 bool dump=false;	// dump internal lists to data files
@@ -45,19 +51,14 @@ bool nstat=false;	// disable internal lists? default (false) enable them
 
 struct wordlist
 {
-	int pos;
 	vector<string> word;
 };
 
 int stat(string nothing, wordlist &st)
 {
-	cerr << "begin stat(" << nothing << "," << &st << ")" <<endl;
-	string datas;
-	unsigned int i;
-	cerr << "about to enter data" <<endl;
 	if(nothing == "list1.dat") // list 1
 	{
-		vector<string> datas= {
+		st.word= {
 "Aardvark",
 "Apocalypse",
 "Bad",
@@ -176,7 +177,7 @@ int stat(string nothing, wordlist &st)
 	}
 	else if(nothing == "list2.dat") // list 2
 	{
-		vector<string> datas={
+		st.word={
 "Agony",
 "Amplitude",
 "and the Hex",
@@ -319,33 +320,22 @@ int stat(string nothing, wordlist &st)
 
 	if(dump)
 	{
-		cerr << "dumping internal lists... " << endl;
 		ofstream outf;
 		outf.open(nothing.c_str());
 		if (outf.is_open())
 		{
-			for(i=0;i<(sizeof(datas)/sizeof(char *));i++)
+			for(int i=0;i<st.word.size();i++)
 			{
-				outf << datas[i] << '\n';
+				outf << st.word[i] << '\n';
 			}
+			outf.close();
 		}
 		else{
 			outf.close();
 			cerr << "Error: Could not open file '" << nothing << "' for writing" << endl;
 			return 1;
 		}
-		outf.close();
-		return 0;
 	}
-	
-	cerr << "size of datas:" << sizeof(datas) << endl << "number elements:"
-		<< sizeof(datas)/sizeof(char *) << endl;
-	for (i=0;i<(sizeof(datas)/sizeof(char *));i++)
-	{
-		st.word[i].push_back(datas[i]);
-	}
-	cerr << "list1 entered" << endl;
-
 
 	return 0;
 }
@@ -356,11 +346,10 @@ int structurise(string filename, wordlist &st)
 		return stat(filename,st);
 
 	ifstream datfile;
-	datfile.open(filename.c_str());
 	string templine;
-	st.pos=0;
 
 	// start reading datafiles into variables
+	datfile.open(filename.c_str());
 	if(!datfile.is_open())
 	{
 		cerr << "Error: " << filename << " could not be opened for read.";
@@ -375,16 +364,11 @@ int structurise(string filename, wordlist &st)
 	}
 	while (!datfile.eof())
 	{
-		//fscanf(datfile,"%63[^\n]\n",templine)
 		getline(datfile,templine);
-		if(templine[0]!='/' && templine[0]!='\n' && templine[0]!='#'){
+		// allow comments in the data files
+		if(templine[0]!='/' && templine[0]!='\n' && templine[0]!='#' && templine[0]!=';')
+		{
 			st.word.push_back(templine);
-	   		st.pos++;
-/*	   		 if (st.pos > 255)	// length of static array
-	  		{
-	   		 	cerr << "Error: " + filename + " max file length exceeded. Input truncated." + endl;
-				break;
-	 		}*/	// no longer necessary
 		}
 	}
 	datfile.close();
@@ -396,16 +380,21 @@ int main (int argc, char *argv[])
 {
 	wordlist one;
 	wordlist two;
-	one.pos=0;
-	two.pos=0;
+	string list1 = "list1.dat";
+	string list2 = "list2.dat";
+
+#ifdef WIN32
+	bool pauseAtEnd = true;	//most Windows users don't run from terminal, so pause at end.
+#else
+	bool pauseAtEnd = false;
+#endif
 
 	/* parse arguments.
 	 *  I threw this together really fast. I realize now that it isn't as
 	 *  flexible as i'd like, but it seems to get the job done for all
 	 *  reasonable situations. Maybe I'll fix it, or maybe I'll just make my
 	 *  parsing functions better in the future.
-	 */ 
-	//cerr << argc << " " << argv[1] << endl;
+	 */
 	if(argc>1){
 		if(strcmp(argv[1] , "-h")==0 || strcmp(argv[1] , "--help")==0 || strcmp(argv[1] , "/?")==0)
 		{
@@ -427,14 +416,14 @@ int main (int argc, char *argv[])
 			<< "I cannot guarantee their accuracy.\n\n"
 			<< "Created by Mason Heller\n"
 			<< "This program is freeware. Use and distribute as you please.\n"
-			<< "For questions, comments, or full source email me at masonph@gmail.com\n";
+			<< "Source available at http://github.com/masonh/bandnames";
 			return 0;
 		}
 		else if(strcmp(argv[1] , "--dump")==0)
 		{
 			dump=true;
-			stat("list1.dat",one);
-			stat("list2.dat",two);
+			stat(list1,one);
+			stat(list2,two);
 			return 0;
 		}
 		else if(strcmp(argv[1] , "--static")==0 || strcmp(argv[1] , "-s")==0)
@@ -457,11 +446,11 @@ int main (int argc, char *argv[])
 		}
 	}
 
-	if(structurise("list1.dat",one)==2){
+	if(structurise(list1,one)==2){
 		cerr << "Fatal Error. Exiting..." << endl;
 		return 1;
 	}
-	if(structurise("list2.dat",two)==2){
+	if(structurise(list2,two)==2){
 		cerr << "Fatal Error. Exiting..." << endl;
 		return 1;
 	}
@@ -469,18 +458,8 @@ int main (int argc, char *argv[])
 
 	srand(time(NULL));
 
-	cerr << "one.pos:" << one.pos << endl;
-	cerr << "two.pos:" << two.pos << endl;
-	int index1,index2;
-	index1 = rand()%one.pos;
-	index2 = rand()%two.pos;
-	cerr << "rand()%one.pos:"<< index1 <<endl;
-	cerr << "one.word[" << index1 << "]:" << one.word[index1] << endl;
-	cout << one.word[index1];
-	cout << " " << two.word[index2] << endl;
-	cout << one.word[index1] << "testing" << endl;
-	cout << "testing" << two.word[index2] << endl;
-	cout << two.word[index2] << "testing" << endl;
+	cout << one.word[rand()%one.word.size()]
+		<< " " << two.word[rand()%two.word.size()] << endl;
 
 	return 0;
 }
