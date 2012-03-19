@@ -2,7 +2,7 @@
  * outputs a random band name based on lists from Rock Band
  * I found the lists online somewhere. don't expect them to be completely accurate
  * i based my code on a previous program i wrote, bofh
- * for more info, suggestions, anything, email me at masonph@gmail.com
+ * both are available on github at http://github.com/masonh
  * enjoy!
  */
 
@@ -15,13 +15,8 @@
  *
  * Requires C++0x / C++11 compiler.
  *
- * Do not use data files with /r/n for line breaks. only use /n
+ * Do not use data files with \r\n for line breaks. only use \n
  */
-
-
-
-
-//#define default_static		// disables data files by default
 
 
 #include <cstdio>
@@ -39,14 +34,12 @@
 using namespace std;
 
 bool dump=false;	// dump internal lists to data files
-
-#ifdef default_static
-bool bstat=true;	// disable data files by default. this basically converts the preprocessor defines into C variables
-#else
-bool bstat=false;	// enable data files by default. this basically converts the preprocessor defines into C variables
-#endif
+bool bstat=true;	// disable data files by default
+bool bstat=false;	// enable data files by default
 bool nstat=false;	// disable internal lists? default (false) enable them
 
+#define LIST1 "list1.dat"
+#define LIST2 "list2.dat"
 
 
 struct wordlist
@@ -56,7 +49,7 @@ struct wordlist
 
 int stat(string nothing, wordlist &st)
 {
-	if(nothing == "list1.dat") // list 1
+	if(nothing == LIST1) // list 1
 	{
 		st.word= {
 "Aardvark",
@@ -70,7 +63,7 @@ int stat(string nothing, wordlist &st)
 "Camden",
 "Captain",
 "Cephalopod",
-"Chekhovs",
+"Chekhovs",
 "Coastal",
 "Covers",
 "Death",
@@ -93,7 +86,7 @@ int stat(string nothing, wordlist &st)
 "Foot",
 "Four Alarm",
 "Fretless",
-"Galileos",
+"Galileos",
 "Gin and",
 "Goony",
 "Grizzly Bear",
@@ -106,7 +99,7 @@ int stat(string nothing, wordlist &st)
 "Horse",
 "Hound",
 "Jefferson",
-"Kafkas",
+"Kafkas",
 "Killa",
 "Killasaurus",
 "Languishing",
@@ -175,7 +168,7 @@ int stat(string nothing, wordlist &st)
 "Wooly",
 "Wynnum"};
 	}
-	else if(nothing == "list2.dat") // list 2
+	else if(nothing == LIST2) // list 2
 	{
 		st.word={
 "Agony",
@@ -380,8 +373,6 @@ int main (int argc, char *argv[])
 {
 	wordlist one;
 	wordlist two;
-	string list1 = "list1.dat";
-	string list2 = "list2.dat";
 
 #ifdef WIN32
 	bool pauseAtEnd = true;	//most Windows users don't run from terminal, so pause at end.
@@ -410,20 +401,25 @@ int main (int argc, char *argv[])
 			<< "  -n, --nstatic    default to data files (default)\n"
 			#endif
 			<< "  -m, --nostatic   disable built-in lists\n"
+			#ifdef WIN32
+			<< "  -p               pause after display (default)\n"
+			<< "  -np              disable pause on windows\n"
+			#else
+			<< "  -p               pause after display\n"
+			#endif
 			<< "      --dump       dump built-in lists to data files\n"
 			<< "  -h, --help, /?   display this help and exit\n"
 			<< "\nThe words for these lists were found on the internet somewhere.\n"
 			<< "I cannot guarantee their accuracy.\n\n"
-			<< "Created by Mason Heller\n"
-			<< "This program is freeware. Use and distribute as you please.\n"
-			<< "Source available at http://github.com/masonh/bandnames";
+			<< "Source available at http://github.com/masonh/bandnames"
+			<< endl;
 			return 0;
 		}
 		else if(strcmp(argv[1] , "--dump")==0)
 		{
 			dump=true;
-			stat(list1,one);
-			stat(list2,two);
+			stat(LIST1,one);
+			stat(LIST2,two);
 			return 0;
 		}
 		else if(strcmp(argv[1] , "--static")==0 || strcmp(argv[1] , "-s")==0)
@@ -439,6 +435,10 @@ int main (int argc, char *argv[])
 			nstat=true;
 			bstat=false;
 		}
+		else if(strcmp(argv[1],"-p")==0)
+			pauseAtEnd = true;
+		else if(strcmp(argv[1],"-np")==0)
+			pauseAtEnd = false;
 		else{
 			cout << "Unrecognised argument: '" << argv[1] << "'\n";
 			cout << "Try 'bofh -h' for a list of valid arguments" << endl;
@@ -446,11 +446,11 @@ int main (int argc, char *argv[])
 		}
 	}
 
-	if(structurise(list1,one)==2){
+	if(structurise(LIST1,one)==2){
 		cerr << "Fatal Error. Exiting..." << endl;
 		return 1;
 	}
-	if(structurise(list2,two)==2){
+	if(structurise(LIST2,two)==2){
 		cerr << "Fatal Error. Exiting..." << endl;
 		return 1;
 	}
@@ -460,6 +460,18 @@ int main (int argc, char *argv[])
 
 	cout << one.word[rand()%one.word.size()]
 		<< " " << two.word[rand()%two.word.size()] << endl;
+	
+
+	if(pauseAtEnd)
+	{
+		cout << "\nPress any key to continue..." << endl;
+#ifdef _INC_CONIO
+		_getch();
+#else
+		cin.get();
+#endif
+	}
+	
 
 	return 0;
 }
